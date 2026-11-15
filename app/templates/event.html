@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block body %}
+{% if ev.venue.image_url %}<img src="{{ ev.venue.image_url }}" class="img-fluid rounded mb-3" alt="venue">{% endif %}
+<h3>{{ ev.title }} <span class="badge bg-secondary">{{ ev.category }}</span>
+ {% if ev.status != 'published' %}<span class="badge bg-danger">{{ ev.status }}</span>{% endif %}</h3>
+<p class="text-muted">{{ ev.start|dt }} to {{ ev.end|dt }}<br>{{ ev.venue.name }}, {{ ev.venue.location }}</p>
+<p>{{ ev.description }}</p>
+<h5>Tickets</h5>
+{% for c in ev.categories %}
+<div class="card mb-2"><div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-2">
+ <div><strong>{{ c.name }}</strong> &middot; LKR {{ '%.2f'|format(c.price) }}<br>
+  <span class="{{ 'text-danger' if c.available == 0 else 'text-success' }}">{{ c.available }} left</span></div>
+ {% if ev.status == 'published' %}
+  {% if not user %}<a class="btn btn-primary" href="/login">Log in to book</a>
+  {% elif c.available > 0 %}
+  <form method="post" action="/events/{{ ev.id }}/book" class="d-flex gap-2">
+   <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="category_id" value="{{ c.id }}">
+   <input class="form-control" style="width:5rem" type="number" name="quantity" value="1" min="1" max="6">
+   <button class="btn btn-primary">Book &amp; pay (simulated)</button>
+  </form>
+  {% else %}
+  <form method="post" action="/events/{{ ev.id }}/waitlist" class="d-flex gap-2">
+   <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="category_id" value="{{ c.id }}">
+   <input class="form-control" style="width:5rem" type="number" name="quantity" value="1" min="1" max="6">
+   <button class="btn btn-warning">Sold out - join waitlist</button>
+  </form>
+  {% endif %}
+ {% endif %}
+</div></div>
+{% endfor %}
+<p class="small text-muted mt-3">Refund policy: 100% if cancelled 7+ days before the event, 50% from 2 to 7 days, 0% within 48 hours. Full refund if the organiser cancels. Max 6 tickets per person.</p>
+{% endblock %}

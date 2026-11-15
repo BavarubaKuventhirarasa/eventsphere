@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block body %}
+<h3>Hire a venue</h3>
+{% if result %}
+ {% set p = result.performative %}
+ <div class="alert alert-{{ 'success' if p == 'AGREE' else 'warning' if p in ('INFORM','PROPOSE') else 'danger' }}">
+  <strong>{{ {'AGREE':'Confirmed','INFORM':'Sent for approval','PROPOSE':'Not possible - here are alternatives','REFUSE':'Refused','FAILURE':'Failed'}[p] }}</strong>
+  {% if result.content.price %}<br>Price: LKR {{ '%.2f'|format(result.content.price) }}{% endif %}
+  <br>{{ result.content.reason }}
+ </div>
+ {% for a in result.content.get('alternatives', []) %}
+ <form method="post" action="/hire" class="card card-body mb-2 flex-row flex-wrap justify-content-between align-items-center gap-2">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <input type="hidden" name="venue_id" value="{{ a.venue_id }}"><input type="hidden" name="start" value="{{ a.start }}">
+  <input type="hidden" name="end" value="{{ a.end }}"><input type="hidden" name="guests" value="{{ form.guests }}">
+  <input type="hidden" name="purpose" value="{{ form.purpose }}">
+  <div>{{ a.venue }}: {{ a.start.replace('T', ' ') }} to {{ a.end[11:] }} &middot; LKR {{ '%.2f'|format(a.price) }}</div>
+  <button class="btn btn-outline-primary btn-sm">Request this instead</button>
+ </form>
+ {% endfor %}
+{% endif %}
+<form method="post" action="/hire" class="row g-2 mb-4">
+ <input type="hidden" name="csrf" value="{{ csrf }}">
+ <div class="col-12 col-md-6"><label class="form-label">Venue</label>
+  <select class="form-select" name="venue_id">{% for v in venues %}<option value="{{ v.id }}" {{ 'selected' if form.venue_id == v.id }}>{{ v.name }} (max {{ v.capacity }}, LKR {{ '%.0f'|format(v.hourly_rate) }}/h)</option>{% endfor %}</select></div>
+ <div class="col-6 col-md-3"><label class="form-label">Guests</label><input class="form-control" type="number" name="guests" min="1" value="{{ form.guests or 10 }}" required></div>
+ <div class="col-12 col-md-6"><label class="form-label">Start</label><input class="form-control" type="datetime-local" name="start" value="{{ form.start }}" required></div>
+ <div class="col-12 col-md-6"><label class="form-label">End</label><input class="form-control" type="datetime-local" name="end" value="{{ form.end }}" required></div>
+ <div class="col-12"><label class="form-label">Purpose</label><input class="form-control" name="purpose" value="{{ form.purpose }}" placeholder="Farewell, club meeting..."></div>
+ <div class="col-12"><button class="btn btn-primary">Request venue</button>
+  <span class="small text-muted ms-2">Weekend rate x1.25. Hires over 4 h or over 80% of capacity need admin approval.</span></div>
+</form>
+<h5>My requests</h5>
+<ul class="list-group">{% for h in mine %}
+<li class="list-group-item">#{{ h.id }} {{ h.venue.name }}, {{ h.start|dt }} to {{ h.end.strftime('%H:%M') }}, {{ h.guests }} guests, LKR {{ '%.2f'|format(h.price) }}
+ <span class="badge bg-{{ 'success' if h.status == 'confirmed' else 'warning' if h.status == 'pending' else 'danger' }}">{{ h.status }}</span></li>
+{% else %}<li class="list-group-item">None yet.</li>{% endfor %}</ul>
+{% endblock %}

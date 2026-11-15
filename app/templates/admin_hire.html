@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block body %}
+<h3>Venue hire requests</h3>
+<div class="table-responsive"><table class="table align-middle"><thead><tr><th>#</th><th>Requester</th><th>Venue</th><th>When</th><th>Guests</th><th>Price</th><th>Status</th><th></th></tr></thead>
+{% for h in hires %}<tr><td>{{ h.id }}</td><td>{{ h.user.name }}<br><small>{{ h.purpose }}</small></td><td>{{ h.venue.name }}</td>
+<td>{{ h.start|dt }} to {{ h.end.strftime('%H:%M') }}</td><td>{{ h.guests }}</td><td>{{ '%.2f'|format(h.price) }}</td>
+<td>{{ h.status }}<br><small>{{ h.note }}</small></td>
+<td>{% if h.status == 'pending' %}
+ <form method="post" action="/admin/hire/{{ h.id }}/decide" class="d-flex gap-1">
+  <input type="hidden" name="csrf" value="{{ csrf }}"><input class="form-control form-control-sm" name="reason" placeholder="Reason if rejecting">
+  <button class="btn btn-sm btn-success" name="approve" value="1">Approve</button><button class="btn btn-sm btn-danger" name="approve" value="0">Reject</button></form>
+{% endif %}</td></tr>
+{% else %}<tr><td colspan="8">No requests.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

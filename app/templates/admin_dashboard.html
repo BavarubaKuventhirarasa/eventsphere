@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block body %}
+<h3>Organiser dashboard</h3>
+<div class="table-responsive"><table class="table table-sm align-middle">
+<thead><tr><th>Event</th><th>Status</th><th>Sold / tickets</th><th>Venue capacity</th><th>Revenue (LKR, simulated)</th><th>Check-ins</th></tr></thead>
+{% for r in rows %}<tr><td>{{ r.ev.title }}<br><small class="text-muted">{{ r.ev.start|dt }}</small></td><td>{{ r.ev.status }}</td>
+<td>{{ r.sold }} / {{ r.total }}</td><td>{{ r.ev.venue.capacity }}</td><td>{{ '%.2f'|format(r.revenue) }}</td><td>{{ r.checkins }}</td></tr>
+{% else %}<tr><td colspan="6">No events.</td></tr>{% endfor %}
+</table></div>
+<canvas id="ch" height="110"></canvas>
+<h5 class="mt-4">Agent state (persistent beliefs)</h5>
+<div class="table-responsive"><table class="table table-sm"><thead><tr><th>Agent</th><th>Belief</th><th>Value</th></tr></thead>
+{% for s in state %}<tr><td>{{ s.agent }}</td><td>{{ s.key }}</td><td>{{ s.value }}</td></tr>{% endfor %}</table></div>
+<a class="btn btn-outline-secondary" href="/admin/messages">Open agent message log</a>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+new Chart(document.getElementById('ch'), {type: 'bar', data: {labels: {{ labels|tojson }},
+ datasets: [{label: 'Tickets sold', data: {{ sold|tojson }}}, {label: 'Checked in', data: {{ checkins|tojson }}}]}});
+</script>
+{% endblock %}

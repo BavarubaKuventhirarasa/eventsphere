@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block body %}
+<h3>Ticket scanner</h3>
+<select id="ev" class="form-select mb-2">{% for e in events %}<option value="{{ e.id }}">{{ e.title }} - {{ e.start|dt }}</option>{% endfor %}</select>
+<div id="reader" style="max-width:360px" class="mb-2"></div>
+<div class="input-group mb-2"><input id="code" class="form-control" placeholder="Or type the ticket code"><button id="go" class="btn btn-primary">Check</button></div>
+<div id="result" class="alert d-none"></div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+const csrf = "{{ csrf }}"; let busy = false;
+async function check(code) {
+  if (busy || !code) return; busy = true;
+  const r = await fetch("/scanner/scan", {method: "POST",
+    headers: {"Content-Type": "application/json", "X-CSRF-Token": csrf},
+    body: JSON.stringify({code: code.trim(), event_id: +document.getElementById("ev").value})});
+  const d = await r.json(); const el = document.getElementById("result");
+  el.className = "alert " + (d.result === "ADMIT" ? "alert-success" : "alert-danger");
+  el.textContent = (d.result || "ERROR") + " - " + (d.reason || d.detail || "") + (d.holder ? " (" + d.holder + ", " + d.category + ")" : "");
+  setTimeout(() => busy = false, 2000);
+}
+document.getElementById("go").onclick = () => check(document.getElementById("code").value);
+try { new Html5Qrcode("reader").start({facingMode: "environment"}, {fps: 10, qrbox: 240}, t => check(t)); } catch (e) {}
+</script>
+{% endblock %}

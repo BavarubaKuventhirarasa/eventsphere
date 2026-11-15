@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: eventsphere
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:$PORT --workers 1
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: eventsphere-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: HTTPS_ONLY
+        value: "1"
+      - key: TZ
+        value: Asia/Colombo
+      - key: PYTHON_VERSION
+        value: 3.11.9
+databases:
+  - name: eventsphere-db
+    plan: free

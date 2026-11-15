@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block body %}
+<h3>Agent message log {% if cid %}<small class="text-muted">conversation {{ cid }}</small>{% endif %}</h3>
+<p class="small">Click a conversation id to follow one user action across all agents.
+ {% if cid %}<a href="/admin/messages">Show all</a>{% else %}<a href="/admin/messages?all=1">Include scheduler heartbeats</a>{% endif %}</p>
+<div class="table-responsive"><table class="table table-sm table-striped"><thead><tr><th>Time</th><th>Conversation</th><th>From</th><th>To</th><th>Performative</th><th>Content</th></tr></thead>
+{% for m in msgs %}<tr><td class="text-nowrap">{{ m.created_at.strftime('%d %b %H:%M:%S') }}</td>
+<td><a href="/admin/messages?cid={{ m.conversation_id }}">{{ m.conversation_id }}</a></td><td>{{ m.sender }}</td><td>{{ m.receiver }}</td>
+<td><span class="badge bg-{{ {'REQUEST':'primary','AGREE':'success','REFUSE':'danger','PROPOSE':'warning','INFORM':'info','FAILURE':'dark'}[m.performative] }}">{{ m.performative }}</span></td>
+<td><code class="small">{{ m.content }}</code></td></tr>{% endfor %}
+</table></div>
+{% endblock %}
