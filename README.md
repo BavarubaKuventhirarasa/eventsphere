@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # EventSphere - multi-agent venue booking and digital ticketing
 
 IT4123 Agent Based Computing Practical, ICA 02. FastAPI + SQLAlchemy + Jinja/Bootstrap.
@@ -40,3 +41,6 @@ hour, book a ticket as the attendee, then scan its QR (or paste the code) on /sc
 
 ## Deploy on Render
 Push to GitHub, then Render > New > Blueprint > pick the repo (uses `render.yaml`: web service + free PostgreSQL).
+=======
+# eventsphere
+>>>>>>> a0d442a9703fa78a2e2072f812fd9f120dfa236e
